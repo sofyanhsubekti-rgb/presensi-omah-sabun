@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Presensi - Omah Sabun</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0a0e1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --bg:#0a0e1a;--bg2:#111827;--sf:#1a2035;--sf2:#232b42;
+      --bd:rgba(6,214,160,.18);--bd2:rgba(6,214,160,.28);--glow-bd:0 0 6px rgba(6,214,160,.1);
+      --tx:#f1f5f9;--tx2:#94a3b8;--tx3:#64748b;
+      --cy:#06d6a0;--cy2:#0ff;--cyd:rgba(6,214,160,.12);
+      --bl:#3b82f6;--bld:rgba(59,130,246,.12);
+      --pu:#a855f7;--pud:rgba(168,85,247,.12);
+      --am:#f59e0b;--amd:rgba(245,158,11,.12);
+      --rd:#ef4444;--rdd:rgba(239,68,68,.12);
+      --gn:#22c55e;--gnd:rgba(34,197,94,.12);
+      --r:12px;--r2:16px;
+    }
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+    .header{background:var(--bg2);border-bottom:1px solid var(--bd);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 8px rgba(6,214,160,.08)}
+    .h-left{display:flex;align-items:center;gap:10px}
+    .h-logo svg{height:28px;width:auto}
+    .h-title{font-size:14px;font-weight:700}.h-sub{font-size:10px;color:var(--cy);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+    .h-date{font-size:11px;color:var(--cy);font-weight:600;text-shadow:0 0 8px rgba(6,214,160,.5),0 0 20px rgba(6,214,160,.2)}
+    .container{padding:16px;max-width:480px;margin:0 auto}
+    .page{display:none}.page.active{display:block}
+
+    /* INPUTS */
+    .ig{margin-bottom:12px}
+    .ig label{display:block;font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+    .ig input,.ig textarea{width:100%;padding:12px 14px;background:var(--bg);border:1.5px solid var(--bd);border-radius:var(--r);color:var(--tx);font-size:14px;font-family:inherit;outline:none;transition:border .2s}
+    .ig input:focus,.ig textarea:focus{border-color:var(--cy)}
+    .ig input::placeholder,.ig textarea::placeholder{color:var(--tx3)}
+    .ig textarea{resize:none;height:72px}
+
+    /* BUTTONS */
+    .btn{width:100%;padding:13px;border:none;border-radius:var(--r);font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px}
+    .btn:active{transform:scale(.97)}.btn:disabled{opacity:.4;cursor:not-allowed}
+    .btn-cy{background:var(--cy);color:#0a0e1a}
+    .btn-bl{background:var(--bl);color:#fff}
+    .btn-rd{background:var(--rd);color:#fff}
+    .btn-gh{background:transparent;color:var(--tx2);border:1.5px solid var(--bd)}
+    .btn-sm{padding:9px 14px;font-size:12px;width:auto}
+    .btn-row{display:flex;gap:8px;margin-top:8px}.btn-row .btn{flex:1}
+
+    /* LOGIN/REGISTER WRAP */
+    .auth-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 56px);padding:20px}
+    .auth-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r2);padding:32px 24px;width:100%;max-width:380px;text-align:center;box-shadow:var(--glow-bd)}
+    .auth-logo{margin-bottom:16px}
+    .auth-logo svg{height:44px;width:auto}
+    .auth-card h2{font-size:18px;font-weight:800;margin-bottom:4px}
+    .auth-card .sub{font-size:12px;color:var(--tx2);margin-bottom:20px}
+
+    /* PHOTO CAPTURE FOR REGISTER */
+    .reg-photo{width:120px;height:120px;border-radius:50%;border:3px solid var(--bd);margin:0 auto 16px;overflow:hidden;position:relative;background:#050810;cursor:pointer}
+    .reg-photo video,.reg-photo img{width:100%;height:100%;object-fit:cover}
+    .reg-photo .ph-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--tx3);font-size:10px;font-weight:600}
+    .reg-photo .ph-label svg{width:24px;height:24px;margin-bottom:4px;fill:var(--tx3)}
+    .reg-photo.has-photo .ph-label{display:none}
+    .reg-photo.active{border-color:var(--cy)}
+
+    /* USER BAR */
+    .ubar{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);margin-bottom:14px;box-shadow:var(--glow-bd)}
+    .ubar-l{display:flex;align-items:center;gap:10px}
+    .ubar-av{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--cy),var(--bl));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#0a0e1a;overflow:hidden}
+    .ubar-av img{width:100%;height:100%;object-fit:cover}
+    .ubar-name{font-weight:700;font-size:13px}
+    .ubar-role{font-size:11px;color:var(--cy);font-weight:600}
+    .logout-btn{font-size:11px;color:var(--rd);cursor:pointer;font-weight:600;background:none;border:none;font-family:inherit}
+
+    /* CLOCK */
+    .clock{background:linear-gradient(135deg,var(--sf),var(--sf2));border:1px solid var(--bd);border-radius:var(--r2);padding:24px;text-align:center;margin-bottom:14px;position:relative;overflow:hidden;box-shadow:var(--glow-bd)}
+    .clock::before{content:'';position:absolute;top:-40px;right:-40px;width:140px;height:140px;background:radial-gradient(circle,var(--cyd),transparent 70%);border-radius:50%}
+    .clock-lb{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--tx3);margin-bottom:2px}
+    .clock-tm{font-size:2.8em;font-weight:900;letter-spacing:-2px;font-variant-numeric:tabular-nums;line-height:1.1;background:linear-gradient(135deg,var(--tx) 30%,var(--cy));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .clock-dt{font-size:12px;color:var(--cy);margin-top:2px;font-weight:600;text-shadow:0 0 8px rgba(6,214,160,.5),0 0 20px rgba(6,214,160,.2)}
+    .clock-ow{font-size:10px;color:var(--cy);margin-top:8px;font-weight:600;letter-spacing:.5px}
+
+    /* TABS */
+    .tabs{display:flex;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:3px;margin-bottom:14px;gap:2px;box-shadow:var(--glow-bd)}
+    .tab{flex:1;padding:9px;border:none;border-radius:9px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;background:transparent;color:var(--tx3);transition:all .2s}
+    .tab.active{background:var(--cy);color:#0a0e1a;box-shadow:0 2px 10px rgba(6,214,160,.25)}
+
+    /* CAMERA */
+    .cam-sec{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r2);overflow:hidden;box-shadow:var(--glow-bd)}
+    .cam-box{position:relative;width:100%;aspect-ratio:3/4;background:#050810}
+    #video,#canvas{width:100%;height:100%;object-fit:cover;display:block}
+    #canvas{display:none}
+    .cam-pv{width:100%;aspect-ratio:3/4;object-fit:cover;display:none}
+    .cam-ov{position:absolute;bottom:0;left:0;right:0;padding:20px;background:linear-gradient(transparent,rgba(10,14,26,.8));display:flex;justify-content:center}
+    .btn-cap{width:56px;height:56px;border-radius:50%;background:#fff;border:3px solid rgba(6,214,160,.5);cursor:pointer;box-shadow:0 0 20px rgba(6,214,160,.2);transition:transform .15s}
+    .btn-cap:active{transform:scale(.85)}
+    .cam-face{position:absolute;top:12px;left:12px;padding:5px 10px;border-radius:8px;font-size:10px;font-weight:700;display:none}
+    .cam-face.ok{display:block;background:var(--gnd);color:var(--gn)}
+    .cam-face.no{display:block;background:var(--rdd);color:var(--rd)}
+    .info-bar{padding:12px 14px;border-top:1px solid var(--bd);display:flex;flex-direction:column;gap:4px}
+    .info-i{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--tx3)}
+    .info-dot{width:6px;height:6px;border-radius:50%;background:var(--cy);flex-shrink:0}
+
+    /* ABSENCE */
+    .abs-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+    .abs-card{background:var(--sf);border:1.5px solid var(--bd);border-radius:var(--r);padding:18px 12px;text-align:center;cursor:pointer;transition:all .15s;box-shadow:var(--glow-bd)}
+    .abs-card.sel{border-color:var(--cy);background:var(--cyd);box-shadow:0 0 20px rgba(6,214,160,.15)}
+    .abs-ic{font-size:22px;margin-bottom:4px}.abs-lb{font-size:13px;font-weight:700}.abs-ds{font-size:10px;color:var(--tx3);margin-top:2px}
+    .ket-wrap{display:none;margin-top:8px}.ket-wrap.show{display:block}
+
+    /* RIWAYAT */
+    .riw{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:14px;margin-bottom:10px;box-shadow:var(--glow-bd)}
+    .riw-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+    .riw-date{font-weight:700;font-size:14px;color:var(--cy);text-shadow:0 0 8px rgba(6,214,160,.5),0 0 20px rgba(6,214,160,.2)}
+    .badge{padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700}
+    .b-ok{background:var(--gnd);color:var(--gn)}.b-act{background:var(--amd);color:var(--am)}
+    .b-izin{background:var(--bld);color:var(--bl)}.b-sakit{background:var(--rdd);color:var(--rd)}
+    .b-cuti{background:var(--pud);color:var(--pu)}.b-libur{background:var(--cyd);color:var(--cy)}
+    .riw-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+    .riw-item{font-size:12px;color:var(--tx2)}
+    .riw-item b{color:var(--tx);font-weight:600}
+    .riw-item.full{grid-column:1/-1}
+    .riw-ket{font-size:11px;color:var(--tx3);font-style:italic;margin-bottom:6px}
+    .riw-fotos{display:flex;gap:8px;margin-top:8px}
+    .riw-foto{position:relative;cursor:pointer}
+    .riw-foto img{width:64px;height:64px;border-radius:8px;object-fit:cover;border:1px solid var(--bd);transition:transform .15s}
+    .riw-foto img:hover{transform:scale(1.05)}
+    .riw-foto span{position:absolute;bottom:2px;left:2px;font-size:8px;background:rgba(0,0,0,.7);color:var(--tx2);padding:1px 5px;border-radius:4px;font-weight:600}
+
+    /* ADMIN */
+    .adm-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;box-shadow:var(--glow-bd)}
+    .adm-av{width:48px;height:48px;border-radius:12px;overflow:hidden;flex-shrink:0;background:var(--sf2);display:flex;align-items:center;justify-content:center}
+    .adm-av img{width:100%;height:100%;object-fit:cover}
+    .adm-av .no-foto{font-size:20px;font-weight:800;color:var(--tx3)}
+    .adm-info{flex:1}
+    .adm-name{font-size:13px;font-weight:700}
+    .adm-meta{font-size:11px;color:var(--tx3)}
+    .adm-acts{display:flex;gap:6px;align-items:center}
+    .bdg-s{padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700}
+    .bdg-aktif{background:var(--gnd);color:var(--gn)}
+    .del-btn{background:none;border:none;color:var(--rd);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;padding:4px 8px}
+
+    /* LIGHTBOX */
+    .lb{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:999;display:none;flex-direction:column;align-items:center;justify-content:center}
+    .lb.show{display:flex}
+    .lb img{max-width:92%;max-height:80vh;border-radius:var(--r);object-fit:contain}
+    .lb-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.1);border:none;color:#fff;width:40px;height:40px;border-radius:50%;font-size:20px;cursor:pointer}
+    .lb-cap{color:var(--tx2);font-size:12px;margin-top:12px;text-align:center}
+
+    .empty{text-align:center;padding:50px 20px;color:var(--tx3);font-size:13px}
+    .empty-ic{font-size:36px;margin-bottom:10px;opacity:.3}
+
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--sf2);color:var(--tx);padding:12px 22px;border-radius:var(--r);font-size:13px;font-weight:600;z-index:998;transition:transform .3s;max-width:90%;text-align:center;font-family:inherit;border:1px solid var(--bd);box-shadow:0 8px 30px rgba(0,0,0,.4)}
+    .toast.show{transform:translateX(-50%) translateY(0)}.toast.error{border-color:var(--rd);color:var(--rd)}.toast.success{border-color:var(--cy);color:var(--cy)}
+    .loading{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:sp .5s linear infinite}
+    @keyframes sp{to{transform:rotate(360deg)}}
+    .divider{display:flex;align-items:center;gap:10px;margin:16px 0 10px}.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--bd)}.divider span{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--tx3);font-weight:600}
+    .link-btn{background:none;border:none;color:var(--cy);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;padding:4px 0}
+    .footer{text-align:center;padding:20px;font-size:10px;color:var(--tx3);letter-spacing:.5px}
+    .footer b{color:var(--cy);font-weight:700}
+
+    /* TAB ID FOR ADMIN */
+    #tabAdmin{display:none}#tabAdmin.active{display:block}
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="h-left">
+    <div class="h-logo"><svg viewBox="0 0 1200 360" xmlns="http://www.w3.org/2000/svg"><path d="M335 118 L600 22 L865 118" fill="none" stroke="#06d6a0" stroke-width="14" stroke-linecap="square"/><text x="600" y="225" text-anchor="middle" font-family="Georgia,serif" font-size="132" font-weight="700" letter-spacing="10" fill="#f1f5f9">OMAH SABUN</text><path d="M310 252 C430 246 770 246 890 252" fill="none" stroke="#f1f5f9" stroke-width="5" stroke-linecap="round"/><path d="M440 253 C515 245 685 245 760 253" fill="none" stroke="#06d6a0" stroke-width="10" stroke-linecap="round"/><text x="600" y="310" text-anchor="middle" font-family="Arial,sans-serif" font-size="38" font-weight="700" letter-spacing="20" fill="#64748b">NARAYA GRUP</text></svg></div>
+    <div><div class="h-title">Presensi</div><div class="h-sub">System v3.0</div></div>
+  </div>
+  <div class="h-date" id="headerDate"></div>
+</div>
+
+<!-- ===== LOGIN ===== -->
+<div id="pageLogin" class="page active">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-logo"><svg viewBox="0 0 1200 360" xmlns="http://www.w3.org/2000/svg"><path d="M335 118 L600 22 L865 118" fill="none" stroke="#06d6a0" stroke-width="14" stroke-linecap="square"/><text x="600" y="225" text-anchor="middle" font-family="Georgia,serif" font-size="132" font-weight="700" letter-spacing="10" fill="#f1f5f9">OMAH SABUN</text><path d="M310 252 C430 246 770 246 890 252" fill="none" stroke="#f1f5f9" stroke-width="5" stroke-linecap="round"/><path d="M440 253 C515 245 685 245 760 253" fill="none" stroke="#06d6a0" stroke-width="10" stroke-linecap="round"/><text x="600" y="310" text-anchor="middle" font-family="Arial,sans-serif" font-size="38" font-weight="700" letter-spacing="20" fill="#64748b">NARAYA GRUP</text></svg></div>
+      <h2>Masuk Presensi</h2>
+      <p class="sub">Sistem Presensi Digital Omah Sabun</p>
+      <div class="ig"><label>Nama Lengkap</label><input type="text" id="loginNama" placeholder="Masukkan nama lengkap"></div>
+      <div class="ig"><label>PIN</label><input type="password" id="loginPin" placeholder="Masukkan PIN" maxlength="6" inputmode="numeric"></div>
+      <button class="btn btn-cy" onclick="doLogin()">Masuk</button>
+      <div style="margin-top:16px"><button class="link-btn" onclick="showPage('pageRegister')">Belum punya akun? Daftar</button></div>
+    </div>
+    <div class="footer">Dibuat oleh <b>Sofyan Harlis Subekti</b></div>
+  </div>
+</div>
+
+<!-- ===== REGISTER ===== -->
+<div id="pageRegister" class="page">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <h2>Daftar Akun</h2>
+      <p class="sub">Buat akun presensi baru</p>
+
+      <div class="reg-photo" id="regPhotoBox" onclick="startRegCamera()">
+        <video id="regVideo" autoplay playsinline muted style="display:none"></video>
+        <img id="regPreview" style="display:none">
+        <div class="ph-label">
+          <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          Foto Profil
+        </div>
+      </div>
+      <canvas id="regCanvas" style="display:none"></canvas>
+      <div style="text-align:center;margin-bottom:12px">
+        <button class="link-btn" id="regRetake" onclick="startRegCamera()" style="display:none">Foto Ulang</button>
+      </div>
+
+      <div class="ig"><label>Nama Lengkap</label><input type="text" id="regNama" placeholder="Nama lengkap sesuai KTP"></div>
+      <div class="ig"><label>PIN (4-6 digit)</label><input type="password" id="regPin" placeholder="Buat PIN" maxlength="6" inputmode="numeric"></div>
+      <div class="ig"><label>Jabatan</label><input type="text" id="regJabatan" placeholder="contoh: Karyawan" value="Karyawan"></div>
+      <button class="btn btn-cy" id="btnReg" onclick="doRegister()">Daftar</button>
+      <div style="margin-top:16px"><button class="link-btn" onclick="showPage('pageLogin')">Sudah punya akun? Masuk</button></div>
+    </div>
+    <div class="footer">Dibuat oleh <b>Sofyan Harlis Subekti</b></div>
+  </div>
+</div>
+
+<!-- ===== MAIN ===== -->
+<div id="pageMain" class="page">
+  <div class="container">
+    <div class="ubar">
+      <div class="ubar-l">
+        <div class="ubar-av" id="userAvatar">S</div>
+        <div><div class="ubar-name" id="dispNama">-</div><div class="ubar-role" id="dispRole">Karyawan</div></div>
+      </div>
+      <button class="logout-btn" onclick="logout()">Keluar</button>
+    </div>
+
+    <div class="clock">
+      <div class="clock-lb">Waktu Saat Ini</div>
+      <div class="clock-tm" id="clockTime">--:--:--</div>
+      <div class="clock-dt" id="clockDate"></div>
+      <div class="clock-ow">Sofyan Harlis Subekti - Owner</div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('presensi')">Presensi</button>
+      <button class="tab" onclick="switchTab('tidakhadir')">Tidak Hadir</button>
+      <button class="tab" onclick="switchTab('riwayat')">Riwayat</button>
+      <button class="tab" onclick="switchTab('admin')" id="btnTabAdmin" style="display:none">Admin</button>
+    </div>
+
+    <!-- PRESENSI -->
+    <div id="tabPresensi" class="page active">
+      <div class="cam-sec">
+        <div class="cam-box">
+          <video id="video" autoplay playsinline muted></video>
+          <canvas id="canvas"></canvas>
+          <img id="preview" class="cam-pv">
+          <div class="cam-ov" id="camOv"><button class="btn-cap" onclick="capturePhoto()"></button></div>
+          <div class="cam-face" id="faceStatus"></div>
+        </div>
+        <div class="info-bar">
+          <div class="info-i"><span class="info-dot"></span><span id="locText">Mengambil lokasi...</span></div>
+          <div class="info-i"><span class="info-dot"></span><span id="timeText">--:--:--</span></div>
+        </div>
+      </div>
+      <div class="btn-row" id="actBtns" style="display:none">
+        <button class="btn btn-cy" id="btnMasuk" onclick="submitPresensi('masuk')">Masuk</button>
+        <button class="btn btn-bl" id="btnPulang" onclick="submitPresensi('pulang')">Pulang</button>
+      </div>
+      <button class="btn btn-gh btn-sm" id="btnRetake" onclick="retake()" style="display:none;margin-top:6px;width:100%">Foto Ulang</button>
+    </div>
+
+    <!-- TIDAK HADIR -->
+    <div id="tabTidakhadir" class="page">
+      <div class="abs-grid">
+        <div class="abs-card" onclick="selAbs('Izin',this)"><div class="abs-ic">&#9993;</div><div class="abs-lb">Izin</div><div class="abs-ds">Keperluan pribadi</div></div>
+        <div class="abs-card" onclick="selAbs('Sakit',this)"><div class="abs-ic">&#10010;</div><div class="abs-lb">Sakit</div><div class="abs-ds">Kondisi kesehatan</div></div>
+        <div class="abs-card" onclick="selAbs('Cuti',this)"><div class="abs-ic">&#9992;</div><div class="abs-lb">Cuti</div><div class="abs-ds">Cuti tahunan / khusus</div></div>
+        <div class="abs-card" onclick="selAbs('Libur',this)"><div class="abs-ic">&#9728;</div><div class="abs-lb">Libur</div><div class="abs-ds">Hari libur / off</div></div>
+      </div>
+      <div class="ket-wrap" id="ketWrap">
+        <div class="ig"><textarea id="inputKet" placeholder="Keterangan (opsional)..."></textarea></div>
+        <button class="btn btn-cy" id="btnAbs" onclick="submitAbs()">Kirim</button>
+      </div>
+    </div>
+
+    <!-- RIWAYAT -->
+    <div id="tabRiwayat" class="page"><div id="riwList"><div class="empty"><div class="empty-ic">&#128203;</div>Memuat...</div></div></div>
+
+    <!-- ADMIN -->
+    <div id="tabAdmin">
+      <div class="divider"><span>Daftar Karyawan Terdaftar</span></div>
+      <div id="userList"><div class="empty">Memuat...</div></div>
+    </div>
+
+    <div class="footer">Dibuat oleh <b>Sofyan Harlis Subekti</b></div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lb" id="lightbox" onclick="closeLb()">
+  <button class="lb-close" onclick="closeLb()">&times;</button>
+  <img id="lbImg" src="">
+  <div class="lb-cap" id="lbCap"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SK='presensi_config';
+const API='https://script.google.com/macros/s/AKfycbyQ5OuE1A2P0a4Yf0AR3iHH12oZhOFuNIfZg3j8N1b7eew5pUGLKtbnjd34yNCl9wgLEw/exec';
+let cfg=JSON.parse(localStorage.getItem(SK)||'{}');
+if(!cfg.apiUrl){cfg.apiUrl=API;save()}
+let curPhoto=null,curLoc={lat:'',lng:'',alamat:''},stream=null,selAbsence='';
+let regPhoto=null,regStream=null;
+
+function save(){localStorage.setItem(SK,JSON.stringify(cfg))}
+
+function init(){
+  updateTime();setInterval(updateTime,1000);
+  if(!cfg.user)showPage('pageLogin');else enterMain();
+}
+
+function updateTime(){
+  const n=new Date(),t=n.toLocaleTimeString('id-ID',{hour12:false}),
+  d=n.toLocaleDateString('id-ID',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const $=id=>document.getElementById(id);
+  if($('clockTime'))$('clockTime').textContent=t;
+  if($('clockDate'))$('clockDate').textContent=d;
+  if($('headerDate'))$('headerDate').textContent=d;
+  if($('timeText'))$('timeText').textContent=t;
+}
+
+function showPage(id){
+  document.querySelectorAll('body>.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ===== AUTH =====
+async function doLogin(){
+  const nama=document.getElementById('loginNama').value.trim();
+  const pin=document.getElementById('loginPin').value.trim();
+  if(!nama||!pin){toast('Lengkapi nama dan PIN','error');return}
+  const btn=document.querySelector('#pageLogin .btn-cy');
+  btn.disabled=true;btn.innerHTML='<span class="loading"></span> Memproses...';
+  try{
+    const p=new URLSearchParams({action:'login',nama,pin});
+    const r=await(await fetch(cfg.apiUrl+'?'+p)).json();
+    if(r.success){cfg.user=r.user;save();enterMain();toast('Selamat datang, '+r.user.nama,'success')}
+    else toast(r.message,'error');
+  }catch{toast('Gagal koneksi ke server','error')}
+  btn.disabled=false;btn.innerHTML='Masuk';
+}
+
+async function doRegister(){
+  const nama=document.getElementById('regNama').value.trim();
+  const pin=document.getElementById('regPin').value.trim();
+  const jab=document.getElementById('regJabatan').value.trim()||'Karyawan';
+  if(!regPhoto){toast('Ambil foto profil dulu','error');return}
+  if(!nama){toast('Masukkan nama lengkap','error');return}
+  if(!pin||pin.length<4){toast('PIN minimal 4 digit','error');return}
+
+  const btn=document.getElementById('btnReg');
+  btn.disabled=true;btn.innerHTML='<span class="loading"></span> Mendaftar...';
+  try{
+    const p=new URLSearchParams({action:'register',nama,pin,jabatan:jab,foto:regPhoto});
+    const r=await(await fetch(cfg.apiUrl+'?'+p)).json();
+    if(r.success){toast(r.message,'success');showPage('pageLogin');document.getElementById('loginNama').value=nama}
+    else toast(r.message,'error');
+  }catch{toast('Gagal koneksi','error')}
+  btn.disabled=false;btn.innerHTML='Daftar';
+}
+
+// REG CAMERA
+async function startRegCamera(){
+  const box=document.getElementById('regPhotoBox');
+  const vid=document.getElementById('regVideo');
+  const prev=document.getElementById('regPreview');
+  try{
+    regStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:400},height:{ideal:400}},audio:false});
+    vid.srcObject=regStream;vid.style.display='block';prev.style.display='none';
+    box.classList.add('active');box.classList.remove('has-photo');
+    document.getElementById('regRetake').style.display='none';
+    regPhoto=null;
+    box.onclick=()=>captureRegPhoto();
+  }catch(e){toast('Gagal akses kamera','error')}
+}
+
+function captureRegPhoto(){
+  const vid=document.getElementById('regVideo');
+  const c=document.getElementById('regCanvas');
+  c.width=400;c.height=400;
+  const ctx=c.getContext('2d');
+  const s=Math.min(vid.videoWidth,vid.videoHeight);
+  const sx=(vid.videoWidth-s)/2,sy=(vid.videoHeight-s)/2;
+  ctx.translate(400,0);ctx.scale(-1,1);
+  ctx.drawImage(vid,sx,sy,s,s,0,0,400,400);
+  ctx.setTransform(1,0,0,1,0,0);
+  regPhoto=c.toDataURL('image/jpeg',.8);
+  const prev=document.getElementById('regPreview');
+  prev.src=regPhoto;prev.style.display='block';
+  vid.style.display='none';
+  document.getElementById('regPhotoBox').classList.add('has-photo');
+  document.getElementById('regPhotoBox').classList.remove('active');
+  document.getElementById('regRetake').style.display='inline';
+  document.getElementById('regPhotoBox').onclick=null;
+  if(regStream)regStream.getTracks().forEach(t=>t.stop());
+}
+
+function enterMain(){
+  showPage('pageMain');
+  const u=cfg.user;
+  document.getElementById('dispNama').textContent=u.nama;
+  document.getElementById('dispRole').textContent=u.jabatan;
+  const av=document.getElementById('userAvatar');
+  if(u.foto){av.innerHTML=`<img src="${u.foto}" onerror="this.parentElement.textContent='${u.nama.charAt(0)}'">`}
+  else{av.textContent=u.nama.charAt(0).toUpperCase()}
+  if(u.isAdmin)document.getElementById('btnTabAdmin').style.display='';
+  startCam();getLoc();
+}
+
+function logout(){
+  if(stream)stream.getTracks().forEach(t=>t.stop());
+  delete cfg.user;save();
+  document.getElementById('loginPin').value='';
+  showPage('pageLogin');
+}
+
+// ===== TABS =====
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  ['tabPresensi','tabTidakhadir','tabRiwayat','tabAdmin'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('active')});
+  const tabs=document.querySelectorAll('.tab');
+  const map={presensi:0,tidakhadir:1,riwayat:2,admin:3};
+  if(tabs[map[tab]])tabs[map[tab]].classList.add('active');
+  const tid='tab'+tab.charAt(0).toUpperCase()+tab.slice(1);
+  const el=document.getElementById(tid);if(el)el.classList.add('active');
+  if(tab==='riwayat')loadRiwayat();
+  if(tab==='admin')loadUsers();
+}
+
+// ===== CAMERA =====
+async function startCam(){
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:720},height:{ideal:960}},audio:false});
+    const v=document.getElementById('video');v.srcObject=stream;v.style.display='block';
+    document.getElementById('preview').style.display='none';
+    document.getElementById('camOv').style.display='flex';
+    document.getElementById('actBtns').style.display='none';
+    document.getElementById('btnRetake').style.display='none';
+    document.getElementById('faceStatus').className='cam-face';
+    curPhoto=null;
+  }catch(e){toast('Gagal akses kamera','error')}
+}
+
+function capturePhoto(){
+  const v=document.getElementById('video'),c=document.getElementById('canvas');
+  c.width=v.videoWidth;c.height=v.videoHeight;
+  const ctx=c.getContext('2d');
+  ctx.translate(c.width,0);ctx.scale(-1,1);ctx.drawImage(v,0,0);ctx.setTransform(1,0,0,1,0,0);
+  const now=new Date(),txt=now.toLocaleString('id-ID',{hour12:false});
+  ctx.fillStyle='rgba(10,14,26,.7)';ctx.fillRect(0,c.height-44,c.width,44);
+  ctx.fillStyle='#06d6a0';ctx.font='bold 14px Inter,sans-serif';ctx.fillText(txt,12,c.height-12);
+  if(curLoc.alamat){ctx.fillStyle='#94a3b8';ctx.font='10px Inter,sans-serif';ctx.fillText(curLoc.alamat.substring(0,55),12,c.height-28)}
+  curPhoto=c.toDataURL('image/jpeg',.7);
+  const p=document.getElementById('preview');p.src=curPhoto;p.style.display='block';
+  v.style.display='none';document.getElementById('camOv').style.display='none';
+  document.getElementById('actBtns').style.display='flex';document.getElementById('btnRetake').style.display='flex';
+  if(stream)stream.getTracks().forEach(t=>t.stop());
+  detectFace(c);
+}
+
+async function detectFace(canvas){
+  const fs=document.getElementById('faceStatus');
+  if('FaceDetector' in window){
+    try{
+      const fd=new FaceDetector();
+      const faces=await fd.detect(canvas);
+      if(faces.length>0){fs.textContent='Wajah terdeteksi';fs.className='cam-face ok'}
+      else{fs.textContent='Wajah tidak terdeteksi';fs.className='cam-face no'}
+    }catch{fs.className='cam-face'}
+  }
+}
+
+function retake(){curPhoto=null;startCam()}
+
+// ===== LOCATION =====
+function getLoc(){
+  if(!navigator.geolocation){document.getElementById('locText').textContent='GPS tidak tersedia';return}
+  navigator.geolocation.getCurrentPosition(async p=>{
+    curLoc.lat=p.coords.latitude;curLoc.lng=p.coords.longitude;
+    try{
+      const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${p.coords.latitude}&lon=${p.coords.longitude}&format=json&accept-language=id`);
+      const d=await r.json();curLoc.alamat=d.display_name||'';
+      document.getElementById('locText').textContent=curLoc.alamat.substring(0,50)+'...';
+    }catch{document.getElementById('locText').textContent=`${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)}`}
+  },()=>{document.getElementById('locText').textContent='Lokasi tidak diizinkan'},{enableHighAccuracy:true});
+}
+
+// ===== SUBMIT =====
+async function submitPresensi(act){
+  if(!curPhoto){toast('Ambil foto dulu','error');return}
+  const btn=document.getElementById(act==='masuk'?'btnMasuk':'btnPulang');
+  const ot=btn.innerHTML;btn.disabled=true;btn.innerHTML='<span class="loading"></span>';
+  try{
+    await fetch(cfg.apiUrl,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:act,nama:cfg.user.nama,foto:curPhoto,lat:curLoc.lat,lng:curLoc.lng,alamat:curLoc.alamat}),mode:'no-cors'});
+    toast('Presensi '+act.toUpperCase()+' terkirim!','success');
+    curPhoto=null;setTimeout(()=>startCam(),1500);
+  }catch(e){toast('Gagal mengirim','error')}
+  btn.disabled=false;btn.innerHTML=ot;
+}
+
+function selAbs(s,el){
+  document.querySelectorAll('.abs-card').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');selAbsence=s;document.getElementById('ketWrap').classList.add('show');
+}
+async function submitAbs(){
+  if(!selAbsence){toast('Pilih jenis dulu','error');return}
+  const btn=document.getElementById('btnAbs');btn.disabled=true;btn.innerHTML='<span class="loading"></span>';
+  try{
+    await fetch(cfg.apiUrl,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'tidakhadir',nama:cfg.user.nama,status:selAbsence,keterangan:document.getElementById('inputKet').value.trim()}),mode:'no-cors'});
+    toast(selAbsence+' berhasil dicatat!','success');
+    selAbsence='';document.getElementById('inputKet').value='';
+    document.querySelectorAll('.abs-card').forEach(c=>c.classList.remove('sel'));
+    document.getElementById('ketWrap').classList.remove('show');
+  }catch(e){toast('Gagal mengirim','error')}
+  btn.disabled=false;btn.innerHTML='Kirim';
+}
+
+// ===== RIWAYAT =====
+async function loadRiwayat(){
+  const c=document.getElementById('riwList');
+  c.innerHTML='<div class="empty"><div class="empty-ic">&#9203;</div>Memuat...</div>';
+  try{
+    const r=await(await fetch(cfg.apiUrl+'?action=riwayat&nama='+encodeURIComponent(cfg.user.nama))).json();
+    if(!r.success||!r.data||!r.data.length){c.innerHTML='<div class="empty"><div class="empty-ic">&#128203;</div>Belum ada riwayat</div>';return}
+    c.innerHTML=r.data.map(d=>{
+      const bc=d.status==='Hadir'?(d.jamPulang?{c:'b-ok',l:'Selesai'}:{c:'b-act',l:'Aktif'}):{c:'b-'+(d.status||'izin').toLowerCase(),l:d.status};
+      const ih=d.status==='Hadir';
+      return `<div class="riw">
+        <div class="riw-hd"><span class="riw-date">${fmtDate(d.tanggal)}</span><span class="badge ${bc.c}">${bc.l}</span></div>
+        <div class="riw-grid">
+          ${ih?`<div class="riw-item">Masuk: <b>${d.jamMasuk||'-'}</b></div><div class="riw-item">Pulang: <b>${d.jamPulang||'-'}</b></div>`:''}
+          ${d.durasi?`<div class="riw-item">Durasi: <b>${d.durasi} jam</b></div>`:''}
+          <div class="riw-item">Tanggal: <b>${d.tanggal}</b></div>
+          ${d.alamat?`<div class="riw-item full">Lokasi: <b>${d.alamat.length>60?d.alamat.substring(0,60)+'...':d.alamat}</b></div>`:''}
+        </div>
+        ${d.keterangan?`<div class="riw-ket">"${d.keterangan}"</div>`:''}
+        ${(d.fotoMasuk||d.fotoPulang)?`<div class="riw-fotos">
+          ${d.fotoMasuk?`<div class="riw-foto" onclick="openLb('${d.fotoMasuk}','Foto Masuk - ${d.tanggal} ${d.jamMasuk}')"><img src="${d.fotoMasuk}" onerror="this.parentElement.style.display='none'"><span>Masuk</span></div>`:''}
+          ${d.fotoPulang?`<div class="riw-foto" onclick="openLb('${d.fotoPulang}','Foto Pulang - ${d.tanggal} ${d.jamPulang}')"><img src="${d.fotoPulang}" onerror="this.parentElement.style.display='none'"><span>Pulang</span></div>`:''}
+        </div>`:''}
+      </div>`;
+    }).join('');
+  }catch{c.innerHTML='<div class="empty"><div class="empty-ic">&#9888;</div>Gagal memuat</div>'}
+}
+function fmtDate(t){if(!t)return'-';try{return new Date(t+'T00:00:00').toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}catch{return t}}
+
+// ===== LIGHTBOX =====
+function openLb(src,cap){
+  const lb=document.getElementById('lightbox');
+  document.getElementById('lbImg').src=src;
+  document.getElementById('lbCap').textContent=cap||'';
+  lb.classList.add('show');
+  event.stopPropagation();
+}
+function closeLb(){document.getElementById('lightbox').classList.remove('show')}
+
+// ===== ADMIN =====
+async function loadUsers(){
+  const c=document.getElementById('userList');
+  c.innerHTML='<div class="empty">Memuat...</div>';
+  try{
+    const r=await(await fetch(cfg.apiUrl+'?action=listUsers')).json();
+    if(!r.data||!r.data.length){c.innerHTML='<div class="empty">Belum ada karyawan</div>';return}
+    c.innerHTML=r.data.map(u=>`
+      <div class="adm-card">
+        <div class="adm-av">${u.foto?`<img src="${u.foto}" onerror="this.style.display='none';this.parentElement.innerHTML='<div class=no-foto>${u.nama.charAt(0)}</div>'">`:`<div class="no-foto">${u.nama.charAt(0)}</div>`}</div>
+        <div class="adm-info"><div class="adm-name">${u.nama}</div><div class="adm-meta">${u.jabatan} &middot; ${u.status}</div></div>
+        <div class="adm-acts">
+          <span class="bdg-s ${u.status==='Aktif'?'bdg-aktif':''}">${u.status}</span>
+          ${u.jabatan!=='Admin'?`<button class="del-btn" onclick="delUser('${u.nama.replace(/'/g,"\\'")}')">Hapus</button>`:''}
+        </div>
+      </div>
+    `).join('');
+  }catch{c.innerHTML='<div class="empty">Gagal memuat</div>'}
+}
+
+async function delUser(nama){
+  if(!confirm('Hapus karyawan "'+nama+'"?'))return;
+  try{
+    const p=new URLSearchParams({action:'deleteUser',nama});
+    const r=await(await fetch(cfg.apiUrl+'?'+p)).json();
+    toast(r.message,r.success?'success':'error');if(r.success)loadUsers();
+  }catch{toast('Gagal','error')}
+}
+
+function toast(m,t){const e=document.getElementById('toast');e.textContent=m;e.className='toast show '+(t||'');setTimeout(()=>e.className='toast',3000)}
+
+init();
+</script>
+</body>
+</html>
