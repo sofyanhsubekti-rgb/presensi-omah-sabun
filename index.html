@@ -344,10 +344,13 @@ async function doLogin(){
   btn.disabled=true;btn.innerHTML='<span class="loading"></span> Memproses...';
   try{
     const p=new URLSearchParams({action:'login',nama,pin});
-    const r=await(await fetch(cfg.apiUrl+'?'+p)).json();
+    const resp=await fetch(cfg.apiUrl+'?'+p);
+    const text=await resp.text();
+    let r;
+    try{r=JSON.parse(text)}catch{toast('Server error: '+text.substring(0,80),'error');btn.disabled=false;btn.innerHTML='Masuk';return}
     if(r.success){cfg.user=r.user;save();enterMain();toast('Selamat datang, '+r.user.nama,'success')}
     else toast(r.message,'error');
-  }catch{toast('Gagal koneksi ke server','error')}
+  }catch(e){toast('Gagal koneksi: '+e.message,'error')}
   btn.disabled=false;btn.innerHTML='Masuk';
 }
 
