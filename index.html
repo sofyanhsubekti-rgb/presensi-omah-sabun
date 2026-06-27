@@ -507,10 +507,29 @@ async function submitPresensi(act){
   try{
     const gp=new URLSearchParams({action:act,nama:cfg.user.nama,lat:curLoc.lat||'',lng:curLoc.lng||'',alamat:curLoc.alamat||''});
     const r=await(await fetch(cfg.apiUrl+'?'+gp)).json();
-    if(r.success){toast(r.message,'success')}else{toast(r.message,'error');btn.disabled=false;btn.innerHTML=ot;return}
+    if(r.success){
+      // Upload foto via hidden form POST (bypass CORS)
+      if(curPhoto)postForm({action:'uploadFoto',nama:cfg.user.nama,tipe:act,foto:curPhoto});
+      toast(r.message,'success');
+    }else{toast(r.message,'error');btn.disabled=false;btn.innerHTML=ot;return}
     curPhoto=null;setTimeout(()=>startCam(),1500);
   }catch(e){toast('Gagal mengirim','error')}
   btn.disabled=false;btn.innerHTML=ot;
+}
+
+function postForm(data){
+  const iframe=document.createElement('iframe');
+  iframe.name='pf_'+Date.now();iframe.style.display='none';
+  document.body.appendChild(iframe);
+  const form=document.createElement('form');
+  form.method='POST';form.action=cfg.apiUrl;form.target=iframe.name;
+  Object.keys(data).forEach(k=>{
+    const inp=document.createElement('textarea');
+    inp.name=k;inp.value=data[k];inp.style.display='none';
+    form.appendChild(inp);
+  });
+  document.body.appendChild(form);form.submit();
+  setTimeout(()=>{try{document.body.removeChild(form);document.body.removeChild(iframe)}catch{}},10000);
 }
 
 function selAbs(s,el){
