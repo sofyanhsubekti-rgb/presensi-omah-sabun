@@ -505,8 +505,9 @@ async function submitPresensi(act){
   const btn=document.getElementById(act==='masuk'?'btnMasuk':'btnPulang');
   const ot=btn.innerHTML;btn.disabled=true;btn.innerHTML='<span class="loading"></span>';
   try{
-    await fetch(cfg.apiUrl,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:act,nama:cfg.user.nama,foto:curPhoto,lat:curLoc.lat,lng:curLoc.lng,alamat:curLoc.alamat}),mode:'no-cors'});
+    const fd=new FormData();
+    fd.append('payload',JSON.stringify({action:act,nama:cfg.user.nama,foto:curPhoto,lat:curLoc.lat,lng:curLoc.lng,alamat:curLoc.alamat}));
+    await fetch(cfg.apiUrl,{method:'POST',body:fd,mode:'no-cors'});
     toast('Presensi '+act.toUpperCase()+' terkirim!','success');
     curPhoto=null;setTimeout(()=>startCam(),1500);
   }catch(e){toast('Gagal mengirim','error')}
@@ -521,8 +522,9 @@ async function submitAbs(){
   if(!selAbsence){toast('Pilih jenis dulu','error');return}
   const btn=document.getElementById('btnAbs');btn.disabled=true;btn.innerHTML='<span class="loading"></span>';
   try{
-    await fetch(cfg.apiUrl,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:'tidakhadir',nama:cfg.user.nama,status:selAbsence,keterangan:document.getElementById('inputKet').value.trim()}),mode:'no-cors'});
+    const fd2=new FormData();
+    fd2.append('payload',JSON.stringify({action:'tidakhadir',nama:cfg.user.nama,status:selAbsence,keterangan:document.getElementById('inputKet').value.trim()}));
+    await fetch(cfg.apiUrl,{method:'POST',body:fd2,mode:'no-cors'});
     toast(selAbsence+' berhasil dicatat!','success');
     selAbsence='';document.getElementById('inputKet').value='';
     document.querySelectorAll('.abs-card').forEach(c=>c.classList.remove('sel'));
