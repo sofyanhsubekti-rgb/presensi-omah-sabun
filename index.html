@@ -514,17 +514,17 @@ async function submitPresensi(act){
     if(r.success){toast(r.message,'success')}
     else{toast(r.message,'error');btn.disabled=false;btn.innerHTML=ot;return}
     curPhoto=null;setTimeout(()=>startCam(),1500);
-  }catch(e){toast('Gagal mengirim','error')}
+  }catch(e){toast('Gagal: '+e.message,'error')}
   btn.disabled=false;btn.innerHTML=ot;
 }
 
 function compressPhoto(srcCanvas){
   try{
     const c2=document.createElement('canvas');
-    c2.width=320;c2.height=240;
-    c2.getContext('2d').drawImage(srcCanvas,0,0,320,240);
-    return c2.toDataURL('image/jpeg',0.25);
-  }catch{return ''}
+    c2.width=160;c2.height=120;
+    c2.getContext('2d').drawImage(srcCanvas,0,0,160,120);
+    return c2.toDataURL('image/jpeg',0.15);
+  }catch(e){return ''}
 }
 
 function selAbs(s,el){
