@@ -541,24 +541,45 @@ async function loadRiwayat(){
     c.innerHTML=r.data.map(d=>{
       const bc=d.status==='Hadir'?(d.jamPulang?{c:'b-ok',l:'Selesai'}:{c:'b-act',l:'Aktif'}):{c:'b-'+(d.status||'izin').toLowerCase(),l:d.status};
       const ih=d.status==='Hadir';
+      const tgl=fmtDate(d.tanggal);
+      const jm=fmtTime(d.jamMasuk);
+      const jp=fmtTime(d.jamPulang);
       return `<div class="riw">
-        <div class="riw-hd"><span class="riw-date">${fmtDate(d.tanggal)}</span><span class="badge ${bc.c}">${bc.l}</span></div>
-        <div class="riw-grid">
-          ${ih?`<div class="riw-item">Masuk: <b>${d.jamMasuk||'-'}</b></div><div class="riw-item">Pulang: <b>${d.jamPulang||'-'}</b></div>`:''}
+        <div class="riw-hd"><span class="riw-date">${tgl}</span><span class="badge ${bc.c}">${bc.l}</span></div>
+        <div style="font-size:12px;color:var(--cy);margin-bottom:8px;font-weight:600">${d.nama} &middot; ${cfg.user.jabatan}</div>
+        ${ih?`<div class="riw-grid">
+          <div class="riw-item">Jam Masuk: <b>${jm}</b></div>
+          <div class="riw-item">Jam Pulang: <b>${jp||'-'}</b></div>
           ${d.durasi?`<div class="riw-item">Durasi: <b>${d.durasi} jam</b></div>`:''}
-          <div class="riw-item">Tanggal: <b>${d.tanggal}</b></div>
-          ${d.alamat?`<div class="riw-item full">Lokasi: <b>${d.alamat.length>60?d.alamat.substring(0,60)+'...':d.alamat}</b></div>`:''}
-        </div>
+        </div>`:''}
+        ${d.alamat?`<div class="riw-item full" style="margin-top:4px">Lokasi: <b>${d.alamat.length>70?d.alamat.substring(0,70)+'...':d.alamat}</b></div>`:''}
         ${d.keterangan?`<div class="riw-ket">"${d.keterangan}"</div>`:''}
         ${(d.fotoMasuk||d.fotoPulang)?`<div class="riw-fotos">
-          ${d.fotoMasuk?`<div class="riw-foto" onclick="openLb('${d.fotoMasuk}','Foto Masuk - ${d.tanggal} ${d.jamMasuk}')"><img src="${d.fotoMasuk}" onerror="this.parentElement.style.display='none'"><span>Masuk</span></div>`:''}
-          ${d.fotoPulang?`<div class="riw-foto" onclick="openLb('${d.fotoPulang}','Foto Pulang - ${d.tanggal} ${d.jamPulang}')"><img src="${d.fotoPulang}" onerror="this.parentElement.style.display='none'"><span>Pulang</span></div>`:''}
-        </div>`:''}
+          ${d.fotoMasuk?`<div class="riw-foto" onclick="openLb('${d.fotoMasuk}','Foto Masuk - ${tgl} ${jm}')"><img src="${d.fotoMasuk}" onerror="this.parentElement.style.display='none'"><span>Masuk</span></div>`:''}
+          ${d.fotoPulang?`<div class="riw-foto" onclick="openLb('${d.fotoPulang}','Foto Pulang - ${tgl} ${jp}')"><img src="${d.fotoPulang}" onerror="this.parentElement.style.display='none'"><span>Pulang</span></div>`:''}
+        </div>`:'<div style="font-size:11px;color:var(--tx3);margin-top:6px;font-style:italic">Tanpa foto</div>'}
       </div>`;
     }).join('');
   }catch{c.innerHTML='<div class="empty"><div class="empty-ic">&#9888;</div>Gagal memuat</div>'}
 }
-function fmtDate(t){if(!t)return'-';try{return new Date(t+'T00:00:00').toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}catch{return t}}
+function fmtDate(t){
+  if(!t)return'-';
+  try{
+    const s=String(t);
+    // Handle ISO "2026-06-27T00:00:00.000Z" or "2026-06-27"
+    const m=s.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if(m){const d=new Date(+m[1],+m[2]-1,+m[3]);return d.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
+    return s;
+  }catch{return String(t)}
+}
+function fmtTime(t){
+  if(!t)return'';
+  const s=String(t);
+  // Handle ISO "1899-12-30T16:54:19.000Z" or "16:54:19"
+  const m=s.match(/(\d{2}):(\d{2}):(\d{2})/);
+  if(m)return m[1]+':'+m[2]+':'+m[3];
+  return s;
+}
 
 // ===== LIGHTBOX =====
 function openLb(src,cap){
