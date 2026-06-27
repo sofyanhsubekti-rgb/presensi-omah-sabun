@@ -464,7 +464,7 @@ function capturePhoto(){
   ctx.fillStyle='rgba(10,14,26,.7)';ctx.fillRect(0,c.height-44,c.width,44);
   ctx.fillStyle='#06d6a0';ctx.font='bold 14px Inter,sans-serif';ctx.fillText(txt,12,c.height-12);
   if(curLoc.alamat){ctx.fillStyle='#94a3b8';ctx.font='10px Inter,sans-serif';ctx.fillText(curLoc.alamat.substring(0,55),12,c.height-28)}
-  curPhoto=c.toDataURL('image/jpeg',.7);
+  curPhoto=c.toDataURL('image/jpeg',.4);
   const p=document.getElementById('preview');p.src=curPhoto;p.style.display='block';
   v.style.display='none';document.getElementById('camOv').style.display='none';
   document.getElementById('actBtns').style.display='flex';document.getElementById('btnRetake').style.display='flex';
@@ -523,13 +523,14 @@ function postForm(data){
   document.body.appendChild(iframe);
   const form=document.createElement('form');
   form.method='POST';form.action=cfg.apiUrl;form.target=iframe.name;
+  form.enctype='multipart/form-data';form.acceptCharset='UTF-8';
   Object.keys(data).forEach(k=>{
     const inp=document.createElement('textarea');
-    inp.name=k;inp.value=data[k];inp.style.display='none';
+    inp.name=k;inp.textContent=data[k];inp.style.display='none';
     form.appendChild(inp);
   });
   document.body.appendChild(form);form.submit();
-  setTimeout(()=>{try{document.body.removeChild(form);document.body.removeChild(iframe)}catch{}},10000);
+  setTimeout(()=>{try{document.body.removeChild(form);document.body.removeChild(iframe)}catch{}},15000);
 }
 
 function selAbs(s,el){
